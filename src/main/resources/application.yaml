@@ -1,0 +1,44 @@
+spring:
+  application:
+    name: ms-order
+  datasource:
+    url: jdbc:postgresql://localhost:5432/order_db
+    username: postgres
+    password: Fn@25011998
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: validate
+      open-in-view: false
+
+  config:
+    import: configserver:http://localhost:8888
+
+resilience4j:
+  circuitbreaker:
+    instances:
+      getOrderById:
+        # configs for close state
+        sliding-window-type: count_based
+        failure-rate-threshold: 50.0
+        sliding-window-size: 10
+        # configs for open state
+        wait-duration-in-open-state: 10s
+        # configs for haf-open state
+        automatic-transition-from-open-to-half-open-enabled: true
+        permitted-number-of-calls-in-half-open-state: 2
+        max-wait-duration-in-half-open-state: 15000
+
+
+management:
+  tracing:
+    sampling:
+      probability: 1.0
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+
+server:
+  port: 8081
+
